@@ -1,0 +1,19 @@
+# Build artifacts
+cache/
+out/
+broadcast/
+
+# Secrets — never commit
+.env
+.env.*
+!.env.example
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
+
+# Node (future frontend)
+node_modules/
+.next/
