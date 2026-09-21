@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+/* Self-hosted variable fonts — zero compile-time font processing. */
+@font-face {
+  font-family: "Geist";
+  src: url("/fonts/Geist-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Geist Mono";
+  src: url("/fonts/GeistMono-Variable.woff2") format("woff2-variations");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 /*
  * EscrowLens design tokens — "evidence-grade financial infrastructure".
  * Precision-instrument palette: graphite surfaces, hairline borders,
@@ -29,8 +45,8 @@
   --sig-signal: #5b9bff;  /* cryptographic / infrastructure      */
 
   /* type */
-  --font-ui: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+  --font-ui: "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", monospace;
 
   /* radii */
   --r-sm: 6px;
