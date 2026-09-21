@@ -1,32 +1,26 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { GeistSans } from "geist/font/sans";
+import { GeistMono } from "geist/font/mono";
 import Providers from "@/components/Providers";
+import AppShell from "@/components/AppShell";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "EscrowLens — Trustless P2P Escrow",
+  title: "EscrowLens — Evidence-grade escrow",
   description:
-    "Passkey-native peer-to-peer escrow on Monad with an independent AI arbiter. No seed phrases, no middlemen.",
+    "Peer-to-peer escrow where funds move only on dual-party approval, evidence is hashed on-chain, and an independent AI arbiter signs recommendations it cannot execute.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${GeistSans.variable} ${GeistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col bg-[#07090e] text-[#e7ecf3]">
-        <Providers>{children}</Providers>
+      <body className="min-h-full flex flex-col bg-canvas text-ink">
+        <Providers>
+          <AppShell>{children}</AppShell>
+        </Providers>
       </body>
     </html>
   );

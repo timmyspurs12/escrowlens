@@ -1,22 +1,18 @@
-import { defineChain } from "viem";
+import type { Chain } from "viem";
+import { RPC_URL, CHAIN_ID } from "./env";
 
 /**
  * Monad Testnet — chain 10143.
- * Not yet exported by @privy-io/chains (only mainnet 143), so we define it.
- * RPC + explorer per docs.monad.xyz.
+ * Plain-object definition (typed as viem Chain) so importing this file
+ * never pulls the viem runtime into a page's compile graph.
  */
-export const monadTestnet = defineChain({
+export const monadTestnet = {
   id: 10143,
   name: "Monad Testnet",
   nativeCurrency: { name: "MON", symbol: "MON", decimals: 18 },
-  rpcUrls: {
-    default: { http: [process.env.NEXT_PUBLIC_MONAD_RPC ?? "https://testnet-rpc.monad.xyz"] },
-  },
-  blockExplorers: {
-    default: { name: "Monad Explorer", url: "https://testnet.monadexplorer.com" },
-  },
+  rpcUrls: { default: { http: [RPC_URL] } },
+  blockExplorers: { default: { name: "Monad Explorer", url: "https://testnet.monadexplorer.com" } },
   testnet: true,
-});
+} as unknown as Chain;
 
-export const ESCROW_CONTRACT = process.env.NEXT_PUBLIC_ESCROW_CONTRACT ?? "";
-export const CHAIN_ID = Number(process.env.NEXT_PUBLIC_CHAIN_ID ?? 10143);
+export { CONTRACT as ESCROW_CONTRACT, CHAIN_ID, DEPLOY_BLOCK } from "./env";

@@ -1,125 +1,119 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import { usePrivy, useLogin } from "@privy-io/react-auth";
-import { ESCROW_CONTRACT, CHAIN_ID, monadTestnet } from "@/lib/monad";
-
-const hasPrivy = !!process.env.NEXT_PUBLIC_PRIVY_APP_ID;
-const hasContract = !!ESCROW_CONTRACT;
+import { readEscrowCountLite, readArbiterLite } from "@/lib/rpc";
+import { CONTRACT, CHAIN_ID } from "@/lib/env";
+import { shortenAddress } from "@/lib/format";
 
 export default function Home() {
-  const { ready, authenticated, user, logout } = usePrivy();
+  const { ready, authenticated, user } = usePrivy();
   const { login } = useLogin();
+  const [count, setCount] = useState<number | null>(null);
+  const [arbiter, setArbiter] = useState<string>("");
 
-  const walletAddress = user?.wallet?.address;
+  useEffect(() => {
+    readEscrowCountLite().then(setCount);
+    readArbiterLite().then(setArbiter);
+  }, []);
 
   return (
-    <main className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col px-6">
-      {/* ambient glow */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(60%_60%_at_50%_0%,rgba(56,130,246,0.16),transparent_70%)]"
-      />
-
-      <header className="flex items-center justify-between py-6">
-        <div className="flex items-center gap-2.5">
-          <LensMark />
-          <span className="text-lg font-semibold tracking-tight">EscrowLens</span>
-        </div>
-        <nav className="hidden items-center gap-8 text-sm text-slate-400 md:flex">
-          <span>How it works</span>
-          <span>Explorer</span>
-          <span>Arbiter</span>
-        </nav>
-        {authenticated ? (
-          <button
-            onClick={logout}
-            className="rounded-lg border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium transition hover:bg-white/10"
-          >
-            {shorten(walletAddress)} · Sign out
-          </button>
-        ) : (
-          <button
-            onClick={() => login()}
-            disabled={!hasPrivy || !ready}
-            className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-semibold text-white shadow-lg shadow-blue-500/20 transition hover:bg-blue-400 disabled:cursor-not-allowed disabled:opacity-40"
-          >
-            Sign in with passkey
-          </button>
-        )}
-      </header>
-
-      <section className="flex flex-1 flex-col items-center justify-center gap-8 pb-28 pt-16 text-center">
-        <span className="rounded-full border border-blue-400/20 bg-blue-400/10 px-3 py-1 text-xs font-medium text-blue-300">
-          Monad Testnet · Chain {CHAIN_ID}
-        </span>
-        <h1 className="max-w-3xl text-5xl font-semibold leading-[1.1] tracking-tight md:text-6xl">
-          Peer-to-peer escrow,
+    <div className="flex flex-col">
+      {/* ── Hero: the mechanism, precisely stated ── */}
+      <section className="flex flex-col items-start gap-7 pb-16 pt-14">
+        <span className="label-mono">EVIDENCE-GRADE P2P ESCROW · MONAD TESTNET {CHAIN_ID}</span>
+        <h1 className="max-w-3xl text-[42px] font-medium leading-[1.08] tracking-[-0.025em] md:text-[54px]">
+          Funds stay locked until
           <br />
-          <span className="bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent">
-            settled by evidence.
-          </span>
+          both sides agree —
+          <br />
+          <span className="text-ink-3">or the evidence decides.</span>
         </h1>
-        <p className="max-w-xl text-lg leading-relaxed text-slate-400">
-          Lock funds in a trustless contract, resolve disputes with an independent AI
-          arbiter, and approve every outcome together. Passkey wallets — no seed
-          phrases, ever.
+        <p className="max-w-xl text-[15.5px] leading-relaxed text-ink-2">
+          EscrowLens locks a payment in a minimal contract. The buyer and seller can always settle by
+          mutual approval. If they disagree, each side commits evidence hashes and an independent AI
+          arbiter signs a recommendation — which still requires both parties to execute.
         </p>
-
-        <div className="flex flex-wrap items-center justify-center gap-4">
-          <a
-            href="/escrow/new"
-            className={`rounded-xl bg-blue-500 px-6 py-3 font-semibold text-white shadow-xl shadow-blue-500/25 transition hover:bg-blue-400 ${
-              !hasContract ? "pointer-events-none opacity-40" : ""
-            }`}
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            href={authenticated ? "/escrow/new" : "/dashboard"}
+            className="focus-ring inline-flex h-11 items-center rounded-[10px] bg-ink px-6 text-[14px] font-medium text-canvas transition hover:bg-white"
           >
-            Create an escrow
-          </a>
-          <a
+            {authenticated ? "Create an escrow" : "Open your account"}
+          </Link>
+          <Link
             href="/explorer"
-            className="rounded-xl border border-white/10 bg-white/5 px-6 py-3 font-medium transition hover:bg-white/10"
+            className="focus-ring inline-flex h-11 items-center rounded-[10px] border border-line-strong px-6 text-[14px] text-ink-2 transition hover:bg-surface-2 hover:text-ink"
           >
-            Browse the explorer
-          </a>
-        </div>
-
-        {/* env readiness — honest states only */}
-        <div className="mt-10 grid w-full max-w-2xl grid-cols-1 gap-3 sm:grid-cols-3">
-          <StatusCard ok={hasPrivy} label="Privy wallet" hint="NEXT_PUBLIC_PRIVY_APP_ID" />
-          <StatusCard ok={hasContract} label="Escrow contract" hint="NEXT_PUBLIC_ESCROW_CONTRACT" />
-          <StatusCard ok={hasContract} label="Sourcify verified" hint="exact_match on 10143" />
+            Inspect the trust record
+          </Link>
+          {!authenticated && (
+            <span className="label-mono hidden md:inline">
+              {ready ? "PASSKEY SIGN-IN · NO SEED PHRASE" : "LOADING SECURE SESSION…"}
+            </span>
+          )}
         </div>
       </section>
-    </main>
-  );
-}
 
-function StatusCard({ ok, label, hint }: { ok: boolean; label: string; hint: string }) {
-  return (
-    <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-left">
-      <div className="flex items-center gap-2 text-sm font-medium">
-        <span className={`h-2 w-2 rounded-full ${ok ? "bg-emerald-400" : "bg-amber-400"}`} />
-        {label}
-      </div>
-      <div className="mt-0.5 truncate pl-4 font-mono text-[11px] text-slate-500">{hint}</div>
+      {/* ── Live record strip: real chain data only ── */}
+      <section className="grid grid-cols-1 gap-px overflow-hidden rounded-[14px] border border-line bg-line sm:grid-cols-3">
+        <div className="bg-surface-1 px-5 py-4">
+          <div className="label-mono">Escrows created</div>
+          <div className="mt-1.5 font-mono text-[22px] tracking-tight">
+            {count === null ? <span className="text-ink-4">··</span> : count}
+          </div>
+        </div>
+        <div className="bg-surface-1 px-5 py-4">
+          <div className="label-mono">Escrow contract</div>
+          <div className="data-mono mt-2 !text-[13px]">{CONTRACT ? shortenAddress(CONTRACT, 12, 8) : "NOT CONFIGURED"}</div>
+        </div>
+        <div className="bg-surface-1 px-5 py-4">
+          <div className="label-mono">Independent arbiter</div>
+          <div className="data-mono mt-2 !text-[13px]">{arbiter ? shortenAddress(arbiter, 12, 8) : "··"}</div>
+        </div>
+      </section>
+
+      {/* ── How the instrument works ── */}
+      <section className="mt-16 flex flex-col gap-8">
+        <span className="label-mono">HOW THE INSTRUMENT WORKS</span>
+        <div className="grid gap-px overflow-hidden rounded-[14px] border border-line bg-line md:grid-cols-3">
+          <Step n="01" title="Lock the terms">
+            The buyer funds the contract in one transaction. Amount, delivery deadline and dispute
+            window become immutable on-chain terms — no admin key exists to change them.
+          </Step>
+          <Step n="02" title="Commit evidence">
+            Delivery happens off-chain. Proof is hashed client-side and committed on-chain, so the
+            dispute record is verifiable without exposing the underlying documents.
+          </Step>
+          <Step n="03" title="Settle by approval">
+            Either party can release or refund. In a dispute, the arbiter signs an EIP-712
+            recommendation — but funds move only when both parties approve the outcome.
+          </Step>
+        </div>
+      </section>
+
+      {/* ── Safety net ── */}
+      <section className="mt-10 rounded-[14px] border border-line bg-surface-1 px-6 py-5">
+        <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+          <span className="label-mono !text-ok">NO LOST FUNDS PATHS</span>
+          <span className="text-[13px] leading-relaxed text-ink-2">
+            Delivery deadline passes silently → seller is paid. Dispute unanswered → buyer refunded.
+            Ruling unapproved in time → buyer refunded. All timeouts are permissionless: anyone can
+            trigger them, no one can prevent them.
+          </span>
+        </div>
+      </section>
     </div>
   );
 }
 
-function shorten(addr?: string) {
-  return addr ? `${addr.slice(0, 6)}…${addr.slice(-4)}` : "Account";
-}
-
-function LensMark() {
+function Step({ n, title, children }: { n: string; title: string; children: React.ReactNode }) {
   return (
-    <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden>
-      <circle cx="14" cy="14" r="11.5" stroke="url(#g)" strokeWidth="2.5" />
-      <circle cx="14" cy="14" r="5" fill="url(#g)" />
-      <defs>
-        <linearGradient id="g" x1="3" y1="3" x2="25" y2="25">
-          <stop stopColor="#60a5fa" />
-          <stop offset="1" stopColor="#22d3ee" />
-        </linearGradient>
-      </defs>
-    </svg>
+    <div className="flex flex-col gap-2 bg-surface-1 px-5 py-5">
+      <span className="label-mono !text-signal">{n}</span>
+      <span className="title-lg !text-[16.5px]">{title}</span>
+      <p className="text-[13.5px] leading-relaxed text-ink-2">{children}</p>
+    </div>
   );
 }

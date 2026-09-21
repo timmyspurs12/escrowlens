@@ -1,26 +1,181 @@
 @import "tailwindcss";
 
+/*
+ * EscrowLens design tokens — "evidence-grade financial infrastructure".
+ * Precision-instrument palette: graphite surfaces, hairline borders,
+ * semantic color used ONLY for state communication.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* surfaces */
+  --canvas: #0a0c0f;
+  --surface-1: #101318;
+  --surface-2: #151920;
+  --surface-3: #1b2028;
+
+  /* ink */
+  --ink: #e9edf3;
+  --ink-2: #a3acb9;
+  --ink-3: #667081;
+  --ink-4: #454e5c;
+
+  /* hairlines */
+  --line: rgba(233, 237, 243, 0.08);
+  --line-strong: rgba(233, 237, 243, 0.14);
+
+  /* semantic — color means state, nothing else */
+  --sig-ok: #3ecf8e;      /* verified / settled / success        */
+  --sig-warn: #e5b567;    /* attention / awaiting / deadline     */
+  --sig-risk: #e5584f;    /* dispute / risk / failure            */
+  --sig-signal: #5b9bff;  /* cryptographic / infrastructure      */
+
+  /* type */
+  --font-ui: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", monospace;
+
+  /* radii */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-canvas: var(--canvas);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-ink-3: var(--ink-3);
+  --color-ink-4: var(--ink-4);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-ok: var(--sig-ok);
+  --color-warn: var(--sig-warn);
+  --color-risk: var(--sig-risk);
+  --color-signal: var(--sig-signal);
+  --font-sans: var(--font-ui);
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  background: var(--canvas);
+  color-scheme: dark;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-ui);
+  font-feature-settings: "ss01" on, "cv11" on;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(91, 155, 255, 0.28);
+}
+
+/* ---------- typographic roles ---------- */
+
+/* Infrastructure label — the voice of the record: mono, quiet, exact. */
+.label-mono {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  line-height: 1.4;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-feature-settings: "tnum" on;
+}
+
+/* Human title — the voice of the deal. */
+.title-xl {
+  font-size: 30px;
+  line-height: 1.15;
+  letter-spacing: -0.022em;
+  font-weight: 560;
+  color: var(--ink);
+}
+.title-lg {
+  font-size: 21px;
+  line-height: 1.25;
+  letter-spacing: -0.015em;
+  font-weight: 560;
+  color: var(--ink);
+}
+
+/* Infrastructure data — hashes, addresses, ids. */
+.data-mono {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: 0.01em;
+  font-feature-settings: "tnum" on;
+  color: var(--ink-2);
+}
+
+/* The secured amount — the largest numeric statement on any screen. */
+.amount-hero {
+  font-family: var(--font-mono);
+  font-feature-settings: "tnum" on;
+  font-size: clamp(34px, 5vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+/* ---------- structural primitives ---------- */
+
+.hairline-t { border-top: 1px solid var(--line); }
+.hairline-b { border-bottom: 1px solid var(--line); }
+.hairline-r { border-right: 1px solid var(--line); }
+
+.panel {
+  background: var(--surface-1);
+  border: 1px solid var(--line);
+  border-radius: var(--r-lg);
+}
+
+.panel-flat {
+  background: var(--surface-1);
+  border-radius: var(--r-md);
+}
+
+.inset {
+  background: var(--canvas);
+  border: 1px solid var(--line);
+  border-radius: var(--r-md);
+}
+
+.focus-ring:focus-visible {
+  outline: 2px solid rgba(91, 155, 255, 0.55);
+  outline-offset: 2px;
+}
+
+/* ---------- motion — communicates state, never decorates ---------- */
+
+@keyframes pulse-current {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
+}
+.pulse-dot { animation: pulse-current 2.2s ease-in-out infinite; }
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.rise-in { animation: rise-in 0.28s ease-out both; }
+
+@keyframes verify-sweep {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(220%); }
+}
+.verify-sweep::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 40%;
+  background: linear-gradient(90deg, transparent, rgba(62, 207, 142, 0.16), transparent);
+  animation: verify-sweep 1.4s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pulse-dot, .rise-in, .verify-sweep::after { animation: none; }
 }
