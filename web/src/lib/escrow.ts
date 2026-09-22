@@ -182,6 +182,28 @@ export type EventRecord = {
   blockNumber: bigint;
 };
 
+/**
+ * The public RPC caps eth_getLogs at 100-block ranges. We therefore scan
+ * targeted windows: user-provided activity anchors (deploy/demo blocks)
+ * plus a recent tail, in parallel 100-block chunks, cached per session.
+ */
+function eventWindows(head: bigint): [bigint, bigint][] {
+  const anchors = (process.env.NEXT_PUBLIC_EVENT_ANCHORS ?? "")
+    .split(",").map((x) => x.trim()).filter(Boolean).map((x) => BigInt(x));
+  const wins: [bigint, bigint][] = [];
+  const R = 300n;
+  for (const a of anchors) {
+    wins.push([a > R ? a - R : 1n, a + R > head ? head : a + R]);
+  }
+  const tailStart = anchors.length ? anchors.reduce((m, a) => (a > m ? a : m), 0n) + R + 1n : BigInt(DEPLOY_BLOCK);
+  if (head > tailStart) {
+    const back = head - tailStart > 2000n ? head - 2000n : tailStart;
+    wins.push([back, head]);
+  }
+  if (wins.length === 0) wins.push([BigInt(DEPLOY_BLOCK), head]);
+  return wins;
+}
+
 export async function scanEvents(): Promise<EventRecord[]> {
   if (!CONTRACT) return [];
   const client = readClient();
@@ -190,24 +212,58 @@ export async function scanEvents(): Promise<EventRecord[]> {
     "EscrowCreated", "Delivered", "Released", "EvidenceSubmitted",
     "DisputeOpened", "RulingRecorded", "RulingApproved", "EscrowSettled", "RulingSettled",
   ] as const;
+  // merge overlapping windows
+  const wins = eventWindows(head)
+    .sort((a, b) => (a[0] < b[0] ? -1 : 1))
+    .reduce<[bigint, bigint][]>((acc, w) => {
+      const last = acc[acc.length - 1];
+      if (last && w[0] <= last[1] + 1n) last[1] = w[1] > last[1] ? w[1] : last[1];
+      else acc.push([w[0], w[1]]);
+      return acc;
+    }, []);
+
+  const chunks: [bigint, bigint][] = [];
+  for (const [from, to] of wins) {
+    for (let f = from; f <= to; f += 100n) {
+      const t = f + 99n > to ? to : f + 99n;
+      chunks.push([f, t]);
+    }
+  }
   const out: EventRecord[] = [];
-  const CH = BigInt(40000);
-  for (let from = BigInt(DEPLOY_BLOCK); from <= head; from += CH) {
-    const to = from + CH - 1n > head ? head : from + CH - 1n;
-    const logs = await client.getLogs({
-      address: CONTRACT,
-      events: ESCROW_ABI.filter((a) => a.type === "event") as never,
-      fromBlock: from,
-      toBlock: to,
-    });
-    for (const l of logs) {
-      const ev = l as unknown as { eventName: string; args: Record<string, unknown>; transactionHash: string; blockNumber: bigint };
-      if (names.includes(ev.eventName as (typeof names)[number])) {
-        out.push({ name: ev.eventName, args: ev.args, txHash: ev.transactionHash, blockNumber: ev.blockNumber });
+  const CONC = 4;
+  let idx = 0;
+  async function worker() {
+    while (idx < chunks.length) {
+      const my = idx++;
+      try {
+        const logs = await client.getLogs({
+          address: CONTRACT,
+          events: ESCROW_ABI.filter((a) => a.type === "event") as never,
+          fromBlock: chunks[my][0],
+          toBlock: chunks[my][1],
+        });
+        for (const l of logs) {
+          const ev = l as unknown as { eventName: string; args: Record<string, unknown>; transactionHash: string; blockNumber: bigint };
+          if (names.includes(ev.eventName as (typeof names)[number])) {
+            out.push({ name: ev.eventName, args: ev.args, txHash: ev.transactionHash, blockNumber: ev.blockNumber });
+          }
+        }
+      } catch {
+        // a failed chunk must never blank the explorer; skip it
       }
     }
   }
-  return out;
+  await Promise.all(Array.from({ length: CONC }, worker));
+  return out.sort((a, b) => (a.blockNumber < b.blockNumber ? -1 : 1));
+}
+
+/** All escrows from pure view calls — complete, cheap, RPC-friendly. */
+export async function readEscrowAll(): Promise<EscrowState[]> {
+  const n = await readEscrowCount();
+  if (!n) return [];
+  const ids = Array.from({ length: n }, (_, i) => BigInt(i + 1));
+  const states = await Promise.all(ids.map((id) => readEscrow(id)));
+  return states.filter((s): s is EscrowState => s !== null);
 }
 
 /* ------------------------------------------------------------------ */
