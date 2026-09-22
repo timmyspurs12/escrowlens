@@ -28,7 +28,9 @@ import { writeFileSync, appendFileSync } from "node:fs";
 const RPC = process.env.RPC_URL ?? "https://testnet-rpc.monad.xyz";
 const CONTRACT = process.env.NEXT_PUBLIC_ESCROW_CONTRACT;
 const CHAIN_ID = 10143;
-const GAS = { maxFeePerGas: 22n * 10n ** 10n, maxPriorityFeePerGas: 2n * 10n ** 9n };
+// Explicit gas cap: the RPC's divergent backends sometimes return a
+// block-limit estimate (~79M), which fails the mempool balance check.
+const GAS = { maxFeePerGas: 22n * 10n ** 10n, maxPriorityFeePerGas: 2n * 10n ** 9n, gas: 400000n };
 
 if (!process.env.DEPLOYER_PRIVATE_KEY || !process.env.ARBITER_PRIVATE_KEY || !CONTRACT) {
   console.error("Need DEPLOYER_PRIVATE_KEY, ARBITER_PRIVATE_KEY, NEXT_PUBLIC_ESCROW_CONTRACT");

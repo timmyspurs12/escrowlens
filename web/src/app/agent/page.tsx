@@ -40,7 +40,9 @@ export default function Agent() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <SectionLabel>Registries (shared public goods — not deployed by this app)</SectionLabel>
+        <SectionLabel right={<TrustSignal tone="ok">VERIFIED LIVE ON CHAIN 10143</TrustSignal>}>
+          Registries (shared public goods — not deployed by this app)
+        </SectionLabel>
         <div className="overflow-hidden rounded-[14px] border border-line">
           <RegRow
             name="Identity Registry"
