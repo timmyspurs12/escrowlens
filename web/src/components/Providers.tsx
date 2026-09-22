@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import SafeBoundary from "./SafeBoundary";
 
 /**
  * Privy wrapper — passkey-based embedded wallets, no seed phrases.
@@ -20,11 +21,13 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID;
 
   if (!appId) {
+    // Privy not configured at build time: still render the app, but shield
+    // it from wallet-hook crashes and show the setup panel.
     return (
-      <>
+      <SafeBoundary>
         {children}
         <SetupRequired />
-      </>
+      </SafeBoundary>
     );
   }
 
