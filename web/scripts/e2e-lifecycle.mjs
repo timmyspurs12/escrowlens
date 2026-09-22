@@ -54,6 +54,7 @@ const ABI = parseAbi([
   "function submitEvidence(uint256 escrowId, bytes32 evidenceHash)",
   "function submitRuling((uint256 escrowId,address buyer,address seller,uint256 amount,bytes32 evidenceHash,uint8 rulingType,uint16 splitBps,uint256 arbiterNonce,uint64 expiry) r, bytes signature)",
   "function approveRuling(uint256 escrowId)",
+  "function getEscrow(uint256) view returns (address,address,uint256,string,uint64,uint64,uint64,uint64,bytes32,bytes32,uint8,uint16,uint8)",
   "function escrowCount() view returns (uint256)",
   "function combinedEvidenceHash(uint256) view returns (bytes32)",
   "function rulingNonce(uint256) view returns (uint256)",
@@ -108,7 +109,7 @@ const parseLogs = (r) => parseEventLogs({ abi: ABI, logs: r.logs });
 async function fundTiny(to, value) {
   for (let i = 0; i < 5; i++) {
     await exec(() => aliceClient.sendTransaction({ to, value, ...GAS }), 2, false).catch(() => null);
-    if ((await pc.getBalance({ address: to })) >= (value * 9n) / 10n) return;
+    if ((await pc.getBalance({ address: to })) >= (value * 9n) / 10n) { await sleep(20000); return; } // fleet-lag guard
     await sleep(2000);
   }
   throw new Error(`funding ${to} failed`);
@@ -124,7 +125,7 @@ async function main() {
   const window = 3600n;
 
   // seller needs gas money only (never receives escrow except via settlement)
-  await fundTiny(seller.address, 5n * 10n ** 14n);
+  await fundTiny(seller.address, 25n * 10n ** 16n); // 0.25 MON: covers 400k×220gwei ceiling
   log(`[0] Seller funded with gas money`);
 
   // ---------------- Escrow A — amicable ----------------

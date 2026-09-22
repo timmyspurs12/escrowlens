@@ -97,9 +97,13 @@ async function step2_registerAgent() {
     return;
   }
   const arbWc = createWalletClient({ account: ARB, chain: monad, transport: http(RPC) });
-  if ((await pc.getBalance({ address: ARB.address })) === 0n) {
+  if ((await pc.getBalance({ address: ARB.address })) < 10n ** 17n) { // need ≥ gas ceiling 0.088
     log("[2] funding arbiter with gas for the one-time registration…");
-    await exec(() => wc.sendTransaction({ to: ARB.address, value: 10n ** 15n, gas: 30000n, maxFeePerGas: 22n * 10n ** 10n, maxPriorityFeePerGas: 2n * 10n ** 9n }), 4, false);
+    // fund enough to cover the gas ceiling: 400k × 220 gwei = 0.088 MON
+    await exec(() => wc.sendTransaction({
+      to: ARB.address, value: 25n * 10n ** 16n, gas: 30000n,
+      maxFeePerGas: 22n * 10n ** 10n, maxPriorityFeePerGas: 2n * 10n ** 9n,
+    }), 4, false);
   }
   const data = encodeFunctionData({
     abi: [{ name: "register", type: "function", stateMutability: "nonpayable", inputs: [{ name: "tokenURI", type: "string" }], outputs: [{ type: "uint256" }] }],

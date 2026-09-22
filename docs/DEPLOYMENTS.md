@@ -60,3 +60,44 @@ The public Monad RPC is load-balanced with occasionally divergent backend state
 at the block limit from stale views). All tooling in `web/scripts/` is hardened for
 this (send+receipt retries, log-polling, explicit gas caps) and these mitigations are
 part of the deliverable.
+
+---
+
+## FINAL SESSION EVIDENCE (2026-09-22, all real txs)
+
+### Escrow #2 — dispute arc completed via permissionless timeout fallback
+`fallbackResolveRuling(2)` → **`RULING_TIMEOUT_REFUNDED_BUYER`**, buyer refunded:
+tx `0xd1743325a0ed9ed5139bb9281c98f6264f9d7ca7266cbdb42dec8d8e7f7d2a98`
+
+### Escrow #3 — amicable path (complete)
+| Step | Tx |
+|---|---|
+| Created + funded | `0x4c14104cd7c44f4240ffa6fce1e15f27cc9d886d531e6aa20285e3947f89c874` |
+| Delivered | `0xa5ee19e8e7481de05c81d6cdd49ea4d3847ee1ecfb359172277450180f956bf4` |
+| Buyer released → `RELEASED_BY_BUYER` | `0x7683c1be26de6016652f8bc08220382c8ce419abccfc731add87f1db46936812` |
+
+### Escrow #6 — FULL DISPUTE CYCLE, settled by dual approval (complete)
+| Step | Tx |
+|---|---|
+| Created + funded | `0xa38def3b355bd5fdd1e33f4d05ad5411410d31bb4c896201f421c36588454ef5` |
+| Marked delivered | `0xdfb65a2431cba2f67d036ec61e2873e989ff323cbae00e3f60a5b7166ab3ede5` |
+| Dispute opened (buyer evidence) | `0x8ea749825ed7a95791d61714543dd0007a930c9884e5492675b121bb466bf050` |
+| Seller evidence committed | `0x3e2d581c52fdf985ebb825f342c2b8c01c7b72b98dbf344ab05b62c0d03dff78` |
+| Arbiter signed RELEASE_SELLER (EIP-712, off-chain) | — signature only, no tx |
+| Buyer published ruling (= her approval) | `0x3a1ff383cc9d287f341b134dd1f88d837afc795a4478095856f4ee574d7397b4` |
+| **Seller approved → `RULING_EXECUTED`** | `0x4ddf78864b55a26c4dc4a77febb2543d706ea35069e7cea2eaaca18bcb42489a` |
+
+(Escrow #4: dispute opened but its run's seller key was ephemeral and lost before
+approval; it will complete via the same permissionless timeout refund — a further
+demonstration of the safety net. Escrow #5: amicable path, `RELEASED_BY_BUYER`,
+txs `0xea48fd9e…`, `0xc86651fb…`, `0x312a8272…`.)
+
+### ERC-8004 — arbiter registered (verified on-chain)
+- **Agent ID 1918**, owner = arbiter `0xd03a037b0EC873FDCE09e6035E8d706C597F80D4`
+- Registration tx: `0xf00b0761f93b102b7058ce62b6881e728356717c988c8d3b5556d60d4c57eae9`
+- `Registered(1918, "https://escrowlens.xyz/agent.json", arbiter)` + `Transfer` events confirmed
+- `balanceOf(arbiter) = 1` (canonical read)
+
+### Contract state after session
+`escrowCount = 6` — escrows #2, #3, #5, #6 Settled; #1 Funded; #4 Disputed (timeout
+refund eligible later; permissionless).
