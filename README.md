@@ -184,6 +184,26 @@ E2E against the live chain: `web/scripts/e2e-lifecycle.mjs` (see `docs/DEPLOYMEN
 See [`docs/DEPLOYMENTS.md`](docs/DEPLOYMENTS.md) for addresses, tx hashes, block, and
 verification evidence. Re-deploy: `forge script script/Deploy.s.sol --rpc-url $RPC --broadcast`.
 
+
+## Hackathon submission notes (Monad Metropolis)
+
+- **Track:** Trust / Identity & AI Infrastructure (passkey-native escrow, ERC-8004
+  identity + reputation, AI arbitration with bounded authority)
+- **Built during the hackathon window:** yes — all code in this repository was written
+  between Sep 21 and Oct 2026; the smart-contract test suite and deployment evidence are
+  in `docs/DEPLOYMENTS.md`.
+- **AI tooling disclosure:** this project was built with AI coding assistance (an AI
+  agent implemented the code under human direction, review, and product decisions).
+  The AI arbiter *inside the product* is a separate matter — see the security section
+  for its strictly bounded authority.
+- **Monad integration:** EscrowLensEscrow deployed on Monad testnet chain 10143 at
+  [`0x11B24EC00A86069fBFbaC6ba20742acdff2B4cB7`](https://testnet.monadexplorer.com/address/0x11B24EC00A86069fBFbaC6ba20742acdff2B4cB7)
+  (Sourcify `exact_match`). Monad's high-throughput, low-fee execution is what makes
+  fine-grained on-chain evidence commitents + dual-approval settlement economical at
+  consumer transaction sizes.
+- **On-chain evidence:** contract address + tx hashes for every lifecycle event are
+  tabulated in [`docs/DEPLOYMENTS.md`](docs/DEPLOYMENTS.md).
+
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE).
