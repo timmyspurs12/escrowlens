@@ -101,3 +101,26 @@ txs `0xea48fd9e…`, `0xc86651fb…`, `0x312a8272…`.)
 ### Contract state after session
 `escrowCount = 6` — escrows #2, #3, #5, #6 Settled; #1 Funded; #4 Disputed (timeout
 refund eligible later; permissionless).
+
+---
+
+## § Production deployment (VERIFIED LIVE)
+
+**URL:** https://escrowlens.vercel.app  (Vercel, git-connected auto-deploy from `main`)
+
+| Check | Result |
+|---|---|
+| All routes (`/`, `/explorer`, `/dashboard`, `/escrow/6`, `/agent`, `/escrow/new`, `/arbiter`) | HTTP 200 |
+| Build (Next 16.3.5 / Turbopack on Vercel) | ✓ compiled, all 9 app routes in route table |
+| `POST /api/arbiter/analyze` (bad input) | 400 `escrowId must be a non-negative integer.` |
+| `POST /api/arbiter/analyze` escrowId=3 (settled) | 409 `This escrow is not in dispute state.` — live Monad RPC read from serverless |
+| `POST /api/arbiter/analyze` escrowId=4 (disputed) | 503 `No arbiter model key is configured` — pending real `QWEN_API_KEY` value |
+
+Env inventory on Vercel (names only; values live only in Vercel's encrypted store):
+`NEXT_PUBLIC_MONAD_RPC`, `NEXT_PUBLIC_CHAIN_ID`, `NEXT_PUBLIC_ESCROW_CONTRACT`,
+`NEXT_PUBLIC_PRIVY_APP_ID`, `NEXT_PUBLIC_EVENT_ANCHORS`, `LLM_PROVIDER`,
+`KIMI_API_KEY`, `QWEN_API_KEY`, `ARBITER_PRIVATE_KEY`, `ARBITER_ADDRESS`,
+`DEPLOYER_PRIVATE_KEY`, `IPFS_API_KEY`, `IPFS_API_SECRET`.
+
+Note: adding/changing env values on Vercel takes effect only after a redeploy.
+AI analysis goes live the moment a real Qwen key value is saved + project redeployed.
