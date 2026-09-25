@@ -16,6 +16,8 @@ import { monadTestnet } from "./monad";
 const KIMI_URL = "https://api.moonshot.ai/v1/chat/completions";
 const QWEN_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions";
 const KIMI_MODEL = "kimi-k2.6";
+const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
+const OPENROUTER_MODEL = "qwen/qwen3-coder:free";
 const QWEN_MODEL = "qwen3.8-max";
 
 const CONTRACT = process.env.NEXT_PUBLIC_ESCROW_CONTRACT as `0x${string}`;
@@ -110,18 +112,32 @@ Respond with ONLY this JSON object, no prose, no code fences:
 }`;
 }
 
+type Provider = "kimi" | "qwen" | "openrouter";
+
 async function callLLM(
-  provider: "kimi" | "qwen",
+  provider: Provider,
   userContent: string
 ): Promise<{ text: string; model: string }> {
-  const key = provider === "kimi" ? process.env.KIMI_API_KEY : process.env.QWEN_API_KEY;
+  const key =
+    provider === "kimi"
+      ? process.env.KIMI_API_KEY
+      : provider === "qwen"
+        ? process.env.QWEN_API_KEY
+        : process.env.OPENROUTER_API_KEY;
   if (!key) throw new Error(`NO_KEY:${provider}`);
-  const url = provider === "kimi" ? KIMI_URL : QWEN_URL;
-  const model = provider === "kimi" ? KIMI_MODEL : QWEN_MODEL;
+  const url =
+    provider === "kimi" ? KIMI_URL : provider === "qwen" ? QWEN_URL : OPENROUTER_URL;
+  const model =
+    process.env.LLM_MODEL ||
+    (provider === "kimi" ? KIMI_MODEL : provider === "qwen" ? QWEN_MODEL : OPENROUTER_MODEL);
 
   const res = await fetch(url, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
+      ...(provider === "openrouter" ? { "X-Title": "EscrowLens" } : {}),
+    },
     body: JSON.stringify({
       model,
       messages: [

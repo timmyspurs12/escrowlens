@@ -40,7 +40,7 @@ export async function POST(req: Request) {
     }
     if (msg === "NO_PROVIDER_KEY") {
       return NextResponse.json(
-        { error: "No arbiter model key is configured. Add KIMI_API_KEY or QWEN_API_KEY (server env)." },
+        { error: "No arbiter model key is configured. Add KIMI_API_KEY, QWEN_API_KEY, or OPENROUTER_API_KEY (server env)." },
         { status: 503 }
       );
     }
