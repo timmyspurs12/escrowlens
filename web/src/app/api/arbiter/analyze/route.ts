@@ -42,15 +42,13 @@ export async function POST(req: Request) {
     if (msg === "NO_PROVIDER_KEY") {
       // Diagnostics: report which arbiter key NAMES the runtime can see
       // (booleans only — never values).
-      const present = [
-        "KIMI_API_KEY",
-        "QWEN_API_KEY",
-        "OPENROUTER_API_KEY",
-      ].filter((k) => Boolean(process.env[k]));
+      const names = ["KIMI_API_KEY", "QWEN_API_KEY", "OPENROUTER_API_KEY"];
       return NextResponse.json(
         {
           error: "No arbiter model key is configured. Add KIMI_API_KEY, QWEN_API_KEY, or OPENROUTER_API_KEY (server env).",
-          keysPresentInRuntime: present,
+          keyLengthsInRuntime: Object.fromEntries(
+            names.map((k) => [k, (process.env[k] ?? "").trim().length])
+          ),
         },
         { status: 503 }
       );
