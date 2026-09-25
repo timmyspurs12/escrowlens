@@ -124,3 +124,14 @@ Env inventory on Vercel (names only; values live only in Vercel's encrypted stor
 
 Note: adding/changing env values on Vercel takes effect only after a redeploy.
 AI analysis goes live the moment a real Qwen key value is saved + project redeployed.
+
+### § AI arbiter LIVE in production (first end-to-end verdict)
+
+`POST /api/arbiter/analyze {escrowId:4}` → **HTTP 200**:
+
+- On-chain read: escrow #4 (disputed) — buyer `0x88c9…620C`, seller `0xAfEd…Ad74`, 0.0005 MON, real `evidenceHash`
+- Verdict: `RELEASE_BUYER`, confidence 20/100 (honest "unknown" evidence status — no party statements supplied; the arbiter flags, never invents)
+- EIP-712 `ruling` struct built with `arbiterNonce` + future `expiry`
+- **`signature`: 0x1365065b…f6a1b — signed by the arbiter key from server env** (publishable on-chain, dual-approval required to settle; arbiter itself cannot move funds)
+- Served by `nvidia/nemotron-3-super-120b-a12b:free` via OpenRouter (qwen free slug was upstream-rate-limited at that moment; model fallback chain worked as designed)
+- Ops notes: `LLM_PROVIDER=openrouter`, `OPENROUTER_API_KEY` set in Vercel (value never leaves Vercel); switching to first-party Qwen later = env-only change. Build logs expose `[env-check]` key-length lines for verification. Escrow #4 seller key was lost pre-recovery (see lifecycle section) — its ruling stays demonstrative; do NOT publish on #4. Use a fresh escrow for live ruling-publication demos.
