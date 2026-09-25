@@ -157,7 +157,7 @@ async function callLLM(
           { role: "user", content: userContent },
         ],
         temperature: 0,
-        max_tokens: 1200,
+        max_tokens: 2500,
       }),
     });
     const data = (await res.json()) as {
@@ -175,7 +175,11 @@ async function callLLM(
 }
 
 function extractJson(raw: string): ArbiterVerdict {
-  const cleaned = raw.replace(/```json|```/g, "").trim();
+  const cleaned = raw
+    .replace(/<[ collaborate]?think>[\s\S]*?<\/[ collaborate]?think>/g, "")
+    .replace(/<[ collaborate]?think>[\s\S]*$/g, "") /* unterminated think = truncated output */
+    .replace(/```json|```/g, "")
+    .trim();
   const start = cleaned.indexOf("{");
   const end = cleaned.lastIndexOf("}");
   if (start === -1 || end === -1) throw new Error("MALFORMED:no JSON object in model output");
@@ -236,6 +240,7 @@ export async function analyzeDispute(input: {
   const attempts: { provider: string; error: string }[] = [];
 
   for (const p of order) {
+    let servedModel = "";
     try {
       const { text, model } = await callLLM(
         p,
@@ -253,11 +258,13 @@ ${input.sellerStatement?.trim() || "(not provided)"}
 
 Deliver the JSON verdict now.`
       );
+      servedModel = model;
       verdict = extractJson(text);
       used = { provider: p, model };
       break;
     } catch (err) {
-      attempts.push({ provider: p, error: ((err as Error).message ?? "unknown").slice(0, 300) });
+      const em = (err as Error).message ?? "unknown";
+      attempts.push({ provider: p, error: (servedModel ? `[${servedModel}] ` : "") + em.slice(0, 300) });
     }
   }
   if (!verdict) {
