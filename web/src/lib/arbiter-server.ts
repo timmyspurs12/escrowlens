@@ -313,7 +313,8 @@ Deliver the JSON verdict now.`
   };
 }
 
-function providerOrder(): ("kimi" | "qwen")[] {
-  const pref = (process.env.LLM_PROVIDER ?? "kimi") as "kimi" | "qwen";
-  return pref === "qwen" ? ["qwen", "kimi"] : ["kimi", "qwen"];
+function providerOrder(): Provider[] {
+  const pref = (process.env.LLM_PROVIDER ?? "kimi") as Provider;
+  const all: Provider[] = ["kimi", "qwen", "openrouter"];
+  return [pref, ...all.filter((x) => x !== pref)];
 }
