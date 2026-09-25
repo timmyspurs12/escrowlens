@@ -124,7 +124,8 @@ async function callLLM(
       : provider === "qwen"
         ? process.env.QWEN_API_KEY
         : process.env.OPENROUTER_API_KEY;
-  if (!key) throw new Error(`NO_KEY:${provider}`);
+  if (!key || !key.trim()) throw new Error(`NO_KEY:${provider}`);
+  const authKey = key.trim();
   const url =
     provider === "kimi" ? KIMI_URL : provider === "qwen" ? QWEN_URL : OPENROUTER_URL;
   const model =
@@ -135,7 +136,7 @@ async function callLLM(
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
+      Authorization: `Bearer ${authKey}`,
       ...(provider === "openrouter" ? { "X-Title": "EscrowLens" } : {}),
     },
     body: JSON.stringify({
@@ -217,7 +218,7 @@ export async function analyzeDispute(input: {
   const order = providerOrder();
   let verdict: ArbiterVerdict | null = null;
   let used = { provider: "", model: "" };
-  let lastErr: Error | null = null;
+  const attempts: { provider: string; error: string }[] = [];
 
   for (const p of order) {
     try {
@@ -241,13 +242,13 @@ Deliver the JSON verdict now.`
       used = { provider: p, model };
       break;
     } catch (err) {
-      lastErr = err as Error;
+      attempts.push({ provider: p, error: ((err as Error).message ?? "unknown").slice(0, 300) });
     }
   }
   if (!verdict) {
-    const msg = lastErr?.message ?? "unknown";
-    if (msg.startsWith("NO_KEY:")) throw new Error("NO_PROVIDER_KEY");
-    throw new Error(`ANALYSIS_FAILED:${msg}`);
+    const keyless = attempts.length > 0 && attempts.every((a) => a.error.startsWith("NO_KEY:"));
+    if (keyless) throw new Error("NO_PROVIDER_KEY");
+    throw new Error(`ALL_PROVIDERS_FAILED:${JSON.stringify(attempts)}`);
   }
 
   const expiry = Math.floor(Date.now() / 1000) + 2 * 3600;

@@ -3,6 +3,7 @@ import { analyzeDispute } from "@/lib/arbiter-server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
 /**
  * POST /api/arbiter/analyze
@@ -65,6 +66,14 @@ export async function POST(req: Request) {
     }
     if (msg.startsWith("MALFORMED:")) {
       return NextResponse.json({ error: `Arbiter output rejected — ${msg.split(":")[1]}` }, { status: 422 });
+    }
+    if (msg.startsWith("ALL_PROVIDERS_FAILED:")) {
+      let attempts: unknown = msg.slice("ALL_PROVIDERS_FAILED:".length);
+      try { attempts = JSON.parse(attempts as string); } catch { /* keep raw */ }
+      return NextResponse.json(
+        { error: "All configured arbiter providers failed.", attempts },
+        { status: 502 }
+      );
     }
     if (msg.startsWith("ANALYSIS_FAILED")) {
       return NextResponse.json({ error: "All configured arbiter providers failed." }, { status: 502 });
