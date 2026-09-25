@@ -114,6 +114,11 @@ Respond with ONLY this JSON object, no prose, no code fences:
 
 type Provider = "kimi" | "qwen" | "openrouter";
 
+const OPENROUTER_FALLBACKS = [
+  "nvidia/nemotron-3-super-120b-a12b:free",
+  "google/gemma-4-31b-it:free",
+];
+
 async function callLLM(
   provider: Provider,
   userContent: string
@@ -128,35 +133,45 @@ async function callLLM(
   const authKey = key.trim();
   const url =
     provider === "kimi" ? KIMI_URL : provider === "qwen" ? QWEN_URL : OPENROUTER_URL;
-  const model =
+  const primary =
     process.env.LLM_MODEL ||
     (provider === "kimi" ? KIMI_MODEL : provider === "qwen" ? QWEN_MODEL : OPENROUTER_MODEL);
+  const models =
+    provider === "openrouter"
+      ? [primary, ...OPENROUTER_FALLBACKS.filter((m) => m !== primary)]
+      : [primary];
 
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${authKey}`,
-      ...(provider === "openrouter" ? { "X-Title": "EscrowLens" } : {}),
-    },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: systemPrompt() },
-        { role: "user", content: userContent },
-      ],
-      temperature: 0,
-      max_tokens: 1200,
-    }),
-  });
-  const data = (await res.json()) as {
-    choices?: { message?: { content?: string } }[];
-    error?: { message?: string };
-  };
-  if (!res.ok || !data.choices?.[0]?.message?.content) {
-    throw new Error(`LLM_ERROR:${provider}:${data.error?.message ?? res.status}`);
+  let lastErr = "";
+  for (const model of models) {
+    const res = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${authKey}`,
+        ...(provider === "openrouter" ? { "X-Title": "EscrowLens" } : {}),
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: systemPrompt() },
+          { role: "user", content: userContent },
+        ],
+        temperature: 0,
+        max_tokens: 1200,
+      }),
+    });
+    const data = (await res.json()) as {
+      choices?: { message?: { content?: string } }[];
+      error?: { message?: string; metadata?: { raw?: string } };
+    };
+    if (!res.ok || !data.choices?.[0]?.message?.content) {
+      const raw = data.error?.metadata?.raw ? ` (${data.error.metadata.raw})` : "";
+      lastErr = `${model}: ${data.error?.message ?? res.status}${raw}`;
+      continue;
+    }
+    return { text: data.choices[0].message.content, model };
   }
-  return { text: data.choices[0].message.content, model };
+  throw new Error(`LLM_ERROR:${provider}:${lastErr}`);
 }
 
 function extractJson(raw: string): ArbiterVerdict {
