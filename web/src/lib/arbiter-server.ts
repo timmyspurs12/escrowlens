@@ -17,7 +17,7 @@ const KIMI_URL = "https://api.moonshot.ai/v1/chat/completions";
 const QWEN_URL = "https://dashscope-intl.aliyuncs.com/compatible-mode/v1/chat/completions";
 const KIMI_MODEL = "kimi-k2.6";
 const OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions";
-const OPENROUTER_MODEL = "qwen/qwen3-coder:free";
+const OPENROUTER_MODEL = "qwen/qwen3.8-27b:free";
 const QWEN_MODEL = "qwen3.8-max";
 
 const CONTRACT = process.env.NEXT_PUBLIC_ESCROW_CONTRACT as `0x${string}`;
