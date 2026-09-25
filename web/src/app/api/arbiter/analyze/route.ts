@@ -39,8 +39,18 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "This escrow is not in dispute state." }, { status: 409 });
     }
     if (msg === "NO_PROVIDER_KEY") {
+      // Diagnostics: report which arbiter key NAMES the runtime can see
+      // (booleans only — never values).
+      const present = [
+        "KIMI_API_KEY",
+        "QWEN_API_KEY",
+        "OPENROUTER_API_KEY",
+      ].filter((k) => Boolean(process.env[k]));
       return NextResponse.json(
-        { error: "No arbiter model key is configured. Add KIMI_API_KEY, QWEN_API_KEY, or OPENROUTER_API_KEY (server env)." },
+        {
+          error: "No arbiter model key is configured. Add KIMI_API_KEY, QWEN_API_KEY, or OPENROUTER_API_KEY (server env).",
+          keysPresentInRuntime: present,
+        },
         { status: 503 }
       );
     }
