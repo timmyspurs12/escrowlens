@@ -29,7 +29,7 @@
   - `/agent` (ERC-8004 REGISTERED · 1918)
 - [ ] **Pre-fire the AI call once** on `/escrow/4` — confirm a verdict returns. Free-tier models rotate; if all three fail with 502, wait 60s and retry. If it keeps failing, keep the last successful JSON in a pinned tab as emergency B-roll (Scene 6 fallback).
 - [ ] **Passkey ready**: Windows Hello PIN/fingerprint enrolled so the Privy prompt is one clean touch.
-- [ ] **Funded signer**: deployer wallet has MON for the on-camera fund tx (~0.26 MON needed max).
+- [ ] **Fresh-wallet plan (Scenes 2–3)**: dry-run a fresh passkey login ONCE off camera. Then copy the new wallet's address and claim from the Monad faucet (~30 min before recording) so Scene 3's faucet beat is a 2-second show-and-tell, never a wait. Keep the old funded account as backup if the fresh login misbehaves.
 - [ ] **Tabs, in order, one window**: ① landing ② /escrow/new ③ /explorer ④ /escrow/6 ⑤ /escrow/4 ⑥ /agent ⑦ testnet.monadexplorer.com (address `0x11B2…4cB7` pasted in search, ready) ⑧ GitHub repo.
 - [ ] **Browser**: F11 fullscreen; zoom 100%; hide bookmarks bar (Ctrl+Shift+B); DevTools NOT open (keep it clean).
 - [ ] **Hide the "Activate Windows" watermark**: in OBS add Crop/Pad filter (Bottom 48px) on the display source, or crop in edit. In Loom: record a custom region excluding the bottom edge.
@@ -68,20 +68,20 @@
 
 ---
 
-### SCENE 3 — CREATE + FUND AN ESCROW (MONAD TX #1) · 0:32–0:56 (24s)
+### SCENE 3 — NEW WALLET → FAUCET → CREATE + FUND (MONAD TX #1) · 0:32–1:00 (28s)
 
-- **SCREEN:** `/escrow/new` guided flow. Fill: title ("Canon EOS R6 body"), amount (0.05 MON), counterparty address, delivery deadline (+2 days). Confirm → wallet tx popup → sign → "Funded" state.
-- **NARRATION (54 words):**
-  > "Creating an escrow is one guided flow: what's traded, how much, and a delivery deadline. Both sides see identical terms — the hash goes on-chain, the details stay private. I confirm with my passkey wallet, and the funds lock in a single transaction on Monad — instant, and costing fractions of a cent."
-- **CUT:** Speed up the tx wait 2–4×. Land the cut exactly when the status flips to **FUNDED**.
+- **SCREEN:** `/escrow/new` guided flow. A brief 2s flash of the Monad faucet page while the VO names it (wallet is pre-funded off camera — see pre-flight). Fill: title ("Canon EOS R6 body"), amount (0.05 MON), counterparty address, delivery deadline (+2 days). Confirm → wallet tx popup → sign → "Funded" state.
+- **NARRATION (60 words):**
+  > "Creating an escrow is one guided flow: what's traded, how much, a delivery deadline. My wallet's brand-new — so first, the Monad faucet: a few seconds, and I'm funded. Both sides see identical terms — the hash goes on-chain, details stay private. I confirm, and the funds lock in one transaction on Monad — instant, fractions of a cent."
+- **CUT:** The faucet moment is a JUMP CUT — 2s faucet shot → funded wallet — narrated honestly, zero dead air. Speed up the tx wait 2–4×; land the cut exactly when the status flips to **FUNDED**.
 
 ---
 
-### SCENE 4 — THE EXPLORER (NOTHING TO HIDE) · 0:56–1:12 (16s)
+### SCENE 4 — THE EXPLORER (NOTHING TO HIDE) · 1:00–1:12 (12s)
 
 - **SCREEN:** `/explorer`. Slow scroll: every escrow row with its state chip — Funded, Delivered, Disputed, Settled. Hover one row.
-- **NARRATION (36 words):**
-  > "Everything lands in a public explorer — every escrow, every state, every commitment hash, read straight from the blockchain. Funded. Delivered. Disputed. Settled. Nothing here is a mockup; these are live contract reads."
+- **NARRATION (27 words):**
+  > "Everything lands in the public explorer — every escrow, every state, every hash, read straight from the chain. Funded. Delivered. Disputed. Settled. Nothing here is a mockup."
 - **CUT:** None. This is a breathing scene — let the viewer read the state chips.
 
 ---
@@ -163,8 +163,8 @@
 
 1. Every peer-to-peer deal runs on the same fear — what if the other side doesn't come through? EscrowLens answers it with code, cryptography, and an AI arbiter that can't touch your money.
 2. This is EscrowLens, live on Monad testnet. There's no seed phrase to write down and no browser extension to install. I sign in with a passkey — biometrics I already trust — and a secure wallet is provisioned for me behind the scenes.
-3. Creating an escrow is one guided flow: what's traded, how much, and a delivery deadline. Both sides see identical terms — the hash goes on-chain, the details stay private. I confirm with my passkey wallet, and the funds lock in a single transaction on Monad — instant, and costing fractions of a cent.
-4. Everything lands in a public explorer — every escrow, every state, every commitment hash, read straight from the blockchain. Funded. Delivered. Disputed. Settled. Nothing here is a mockup; these are live contract reads.
+3. Creating an escrow is one guided flow: what's traded, how much, a delivery deadline. My wallet's brand-new — so first, the Monad faucet: a few seconds, and I'm funded. Both sides see identical terms — the hash goes on-chain, details stay private. I confirm, and the funds lock in one transaction on Monad — instant, fractions of a cent.
+4. Everything lands in the public explorer — every escrow, every state, every hash, read straight from the chain. Funded. Delivered. Disputed. Settled. Nothing here is a mockup.
 5. Escrow six ran the complete dispute arc for real. The buyer disputed, the seller submitted evidence, and the AI arbiter issued a signed recommendation. Then the rule that defines this product: both parties had to approve before anything moved. Buyer approved, seller approved — and only then did the contract execute the ruling. Every step is a transaction you can verify yourself on the Monad explorer — this hash, right here.
 6. Now watch a brand-new AI ruling happen — live, right now. Escrow four is in genuine dispute. I request analysis: the server reads the contract state, builds an evidence brief, calls the model, validates the verdict against a strict schema, and signs it with the arbiter's key. That signature binds the arbiter to exactly one ruling, one escrow, one nonce — replay-proof. And here is the design line that matters: the arbiter signs a recommendation. It cannot move escrowed funds. Dual approval, or a permissionless timeout, settles — the AI only ever advises.
 7. The arbiter itself is registered as an ERC-8004 agent — identity nineteen-eighteen on Monad's on-chain registry — so every ruling it signs accumulates into portable, verifiable reputation.
