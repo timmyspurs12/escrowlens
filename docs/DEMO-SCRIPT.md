@@ -35,7 +35,7 @@
 - [ ] **Hide the "Activate Windows" watermark**: in OBS add Crop/Pad filter (Bottom 48px) on the display source, or crop in edit. In Loom: record a custom region excluding the bottom edge.
 - [ ] **Notifications OFF**: Windows Focus Assist on; phone out of frame; Slack/email closed.
 - [ ] **Recorder**: OBS 1080p30 + mic, or Loom screen+cam. Do one 30s test clip; check mic level and that text is crisp.
-- [ ] **Explorer health check (morning of recording)**: open `testnet.monadexplorer.com/tx/0x4ddf7886…` — if NODE_REQUEST_ERROR, try `monadscan.com/tx/…` in a normal browser tab; if BOTH fail, Scene 5's click-through becomes our own `/explorer` page with the hash on screen, narrated ("every hash verifiable on any Monad explorer")
+- [ ] **Explorer health check (morning of recording)**: PRIMARY click-through is now OUR OWN `/tx/<hash>` page (escrowlens.vercel.app/tx/0x4ddf7886…) — decoded events straight from RPC, zero third-party dependency. Verify it renders SUCCESS the morning of recording. Cross-check badges on that page link to testnet.monadscan.com (Etherscan-powered — note the `testnet.` subdomain; bare monadscan.com is the MAINNET explorer and will say "not found") and testnet.monadexplorer.com (BlockVision — currently flaky with NODE_REQUEST_ERROR; it 403s even brand-new txs, their backend outage).
 
 ### You
 - [ ] Read all narration ALOUD twice before recording (muscle memory beats reading on camera).
@@ -89,7 +89,7 @@
 
 ### SCENE 5 — ESCROW #6: THE FULL DISPUTE ARC (MONAD TX PROOF) · 1:12–1:44 (32s)
 
-- **SCREEN:** Quick connecting flash first (2s): dashboard showing the NEW Canon escrow — **FUNDED · awaiting delivery** — right beside escrow #6 **SETTLED**. Then `/escrow/6`. Scroll the page top→bottom in this order: ① state rail (SETTLED) ② amount "SECURED IN ESCROW" ③ evidence ledger entries (buyer dispute, seller evidence) ④ arbiter instrument card — RECOMMENDATION, confidence, FINDING 01..N ⑤ **EXECUTED RULING** badge ⑥ click the settlement **tx hash** → Monad explorer tab (2s) → back.
+- **SCREEN:** Quick connecting flash first (2s): dashboard showing the NEW Canon escrow — **FUNDED · awaiting delivery** — right beside escrow #6 **SETTLED**. Then `/escrow/6`. Scroll the page top→bottom in this order: ① state rail (SETTLED) ② amount "SECURED IN ESCROW" ③ evidence ledger entries (buyer dispute, seller evidence) ④ arbiter instrument card — RECOMMENDATION, confidence, FINDING 01..N ⑤ **EXECUTED RULING** badge ⑥ click the settlement **tx hash** → `/tx/<hash>` page (decoded ESCROW EVENTS straight from the chain — hold 3s) → then the testnet.monadscan.com badge in a second tab (2s) → back.
 - **CONNECT LINE (optional, no VO change needed):** the flash visually says "created minutes ago" meets "disputed last week" — the new deal is the live obligation, #6 is the mature proof.
 - **NARRATION (72 words):**
   > "Escrow six ran the complete dispute arc for real. The buyer disputed, the seller submitted evidence, and the AI arbiter issued a signed recommendation. Then the rule that defines this product: both parties had to approve before anything moved. Buyer approved, seller approved — and only then did the contract execute the ruling. Every step is a transaction you can verify yourself on the Monad explorer — this hash, right here."
