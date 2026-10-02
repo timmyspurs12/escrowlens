@@ -100,7 +100,15 @@
 
 ### SCENE 6 — THE LIVE AI RULING (THE CLIMAX) · 1:44–2:20 (36s)
 
-- **SCREEN:** `/escrow/4` (genuinely in dispute). Click the **AI analysis** control → loading state → the **ArbitrationPanel** renders: RECOMMENDATION, CONFIDENCE, FINDING 01..N, and the **EIP-712 signature** — plus the panel line *"THE ARBITER SIGNS A RECOMMENDATION. IT CANNOT MOVE ESCROWED FUNDS."* End with the mouse pointing at that sentence.
+- **SCREEN:** `/escrow/4` (genuinely in dispute), logged in as a party. Sequence:
+  ① (3s) highlight the explainer paragraph — "An independent AI arbiter will read the on-chain terms and each party's statements, then sign a recommendation under EIP-712…" — mouse drifts down it slowly
+  ② click **Request arbitration review** (SAFE: read-only, no tx, no gas, no state change — retake-friendly)
+  ③ loading state → speed-ramp 4–8×
+  ④ ArbitrationPanel renders: RECOMMENDATION, CONFIDENCE, FINDING 01..N → 120% punch-in
+  ⑤ punch-in on the EIP-712 signature block
+  ⑥ end on *"THE ARBITER SIGNS A RECOMMENDATION. IT CANNOT MOVE ESCROWED FUNDS."* — mouse on the line, hold 2s
+- **⚠️ NEVER CLICK "Publish ruling to contract" ON ESCROW #4** — its seller key was lost; a published ruling could never reach the second approval and the demo asset would be stranded. Analysis button = safe. Publish = destructive HERE.
+- **OPTIONAL +6s RESTRAINT BEAT** (budget allows: VO ends 2:42, cap 3:00): hover "Publish ruling to contract" WITHOUT clicking while saying "publishing would record it on-chain — and it would still need the seller's approval to settle." Showing the gate and not pressing it proves dual approval is real.
 - **NARRATION (82 words):**
   > "Now watch a brand-new AI ruling happen — live, right now. Escrow four is in genuine dispute. I request analysis: the server reads the contract state, builds an evidence brief, calls the model, validates the verdict against a strict schema, and signs it with the arbiter's key. That signature binds the arbiter to exactly one ruling, one escrow, one nonce — replay-proof. And here is the design line that matters: the arbiter signs a recommendation. It cannot move escrowed funds. Dual approval, or a permissionless timeout, settles — the AI only ever advises."
 - **CUT:** Model latency can be 10–30s: speed up the wait 4–8× with a subtle zoom on the loading state. If ALL models fail on camera (502): use the emergency B-roll JSON tab and say "…and here's the signed verdict from the same endpoint moments ago." Honest, and still real.
