@@ -85,18 +85,21 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   );
 }
 
+/**
+ * EscrowLens mark — a six-blade optical aperture inside a hairline
+ * instrument ring: funds sealed in an evidence-grade lens. Blades use the
+ * verified-green semantic (#3ecf8e); the ring stays hairline-neutral.
+ */
 export function LensMark({ size = 22 }: { size?: number }) {
   return (
-    <svg width={size} height={size} viewBox="0 0 28 28" fill="none" aria-hidden>
-      <circle cx="14" cy="14" r="11.5" stroke="url(#lg)" strokeWidth="2.2" />
-      <circle cx="14" cy="14" r="4.6" fill="url(#lg)" />
-      <path d="M22.5 22.5 26 26" stroke="url(#lg)" strokeWidth="2.2" strokeLinecap="round" />
-      <defs>
-        <linearGradient id="lg" x1="3" y1="3" x2="25" y2="25">
-          <stop stopColor="#5b9bff" />
-          <stop offset="1" stopColor="#3ecf8e" />
-        </linearGradient>
-      </defs>
+    <svg width={size} height={size} viewBox="0 0 256 256" fill="none" aria-hidden>
+      <circle cx="128" cy="128" r="120" stroke="rgba(233,237,243,0.16)" strokeWidth="2.5" />
+      <circle cx="128" cy="128" r="111" stroke="#3ecf8e" strokeOpacity="0.5" strokeWidth="1.75" />
+      <g fill="#3ecf8e" stroke="#101318" strokeWidth="3" strokeLinejoin="miter">
+        {Array.from({ length: 6 }, (_, i) => (
+          <path key={i} d="M128 36 L222 82 L165 111 Z" transform={`rotate(${i * 60} 128 128)`} />
+        ))}
+      </g>
     </svg>
   );
 }

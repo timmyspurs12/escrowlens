@@ -1,5 +1,7 @@
 # EscrowLens
 
+<p align="center"><img src="docs/brand/escrowlens-logo.png" alt="EscrowLens mark" width="128"/></p>
+
 **Evidence-grade peer-to-peer escrow on Monad testnet.**
 Funds stay locked until both sides agree — or the evidence decides.
 
