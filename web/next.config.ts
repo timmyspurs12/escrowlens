@@ -10,8 +10,18 @@ for (const [k] of Object.entries(__envCheck)) {
   console.log(`[env-check] ${k}: ${v ? `${v.trim().length} chars` : "MISSING"}`);
 }
 
+
 const nextConfig: NextConfig = {
-  /* config options here */
+  async headers() {
+    return [
+      {
+        // HTML documents only — hashed /_next/static assets keep their own caching
+        source: "/:path*",
+        has: [{ type: "header", key: "sec-fetch-dest", value: "document" }],
+        headers: [{ key: "Cache-Control", value: "no-store, must-revalidate" }],
+      },
+    ];
+  },
 };
 
 export default nextConfig;

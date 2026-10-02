@@ -125,7 +125,7 @@ export default function Agent() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <SectionLabel>Registration status · read live from the Identity Registry</SectionLabel>
+        <SectionLabel>Registration status · live registry check · UI v2</SectionLabel>
         {reg.kind === "reading" && (
           <Callout tone="neutral" title="READING REGISTRY…">
             Querying ownerOf({AGENT_ID}) and balanceOf(arbiter) on-chain. This page only claims a
