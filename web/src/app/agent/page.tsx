@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { readArbiter } from "@/lib/escrow";
+import { readArbiter, readClient } from "@/lib/escrow";
 import { EXPLORER_ADDR } from "@/lib/format";
 import { AddressChip, Callout, SectionLabel, TrustSignal } from "@/components/ui";
 
@@ -10,11 +10,78 @@ import { AddressChip, Callout, SectionLabel, TrustSignal } from "@/components/ui
  * Facts only: registry addresses are the public good contracts; the agent
  * registration transaction is listed as pending until it is really mined.
  */
+const IDENTITY_REGISTRY = "0x8004A818BFB912233c491871b3d84c89A494BD9e";
+const REG_TX = "0xf00b0761f93b102b7058ce62b6881e728356717c988c8d3b5556d60d4c57eae9";
+const AGENT_ID = 1918;
+
+type RegState =
+  | { kind: "reading" }
+  | { kind: "registered" }
+  | { kind: "pending" }
+  | { kind: "error"; detail: string };
+
 export default function Agent() {
   const [arbiter, setArbiter] = useState("");
+  const [reg, setReg] = useState<RegState>({ kind: "reading" });
+
   useEffect(() => {
     readArbiter().then(setArbiter);
   }, []);
+
+  useEffect(() => {
+    if (!arbiter) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const client = readClient();
+        const abi = [
+          {
+            type: "function",
+            name: "ownerOf",
+            stateMutability: "view",
+            inputs: [{ name: "tokenId", type: "uint256" }],
+            outputs: [{ type: "address" }],
+          },
+          {
+            type: "function",
+            name: "balanceOf",
+            stateMutability: "view",
+            inputs: [{ name: "owner", type: "address" }],
+            outputs: [{ type: "uint256" }],
+          },
+        ] as const;
+        const owner = await client.readContract({
+          address: IDENTITY_REGISTRY as `0x${string}`,
+          abi,
+          functionName: "ownerOf",
+          args: [BigInt(AGENT_ID)],
+        });
+        const balance = await client.readContract({
+          address: IDENTITY_REGISTRY as `0x${string}`,
+          abi,
+          functionName: "balanceOf",
+          args: [arbiter as `0x${string}`],
+        });
+        if (cancelled) return;
+        if (
+          typeof owner === "string" &&
+          owner.toLowerCase() === arbiter.toLowerCase() &&
+          balance >= 1n
+        ) {
+          setReg({ kind: "registered" });
+        } else {
+          setReg({ kind: "pending" });
+        }
+      } catch (e) {
+        if (!cancelled) {
+          setReg({ kind: "error", detail: ((e as Error).message ?? "rpc error").slice(0, 160) });
+        }
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [arbiter]);
 
   return (
     <div className="mx-auto flex max-w-3xl flex-col gap-8">
@@ -58,12 +125,44 @@ export default function Agent() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <SectionLabel>Registration status</SectionLabel>
-        <Callout tone="warn" title="AGENT REGISTRATION — PENDING">
-          The arbiter has not yet been registered on the registries above. Until the registration
-          transaction is mined, this page deliberately claims no agent id or reputation. No metrics
-          are displayed because none exist yet.
-        </Callout>
+        <SectionLabel>Registration status · read live from the Identity Registry</SectionLabel>
+        {reg.kind === "reading" && (
+          <Callout tone="neutral" title="READING REGISTRY…">
+            Querying ownerOf({AGENT_ID}) and balanceOf(arbiter) on-chain. This page only claims a
+            registration it can verify in the moment.
+          </Callout>
+        )}
+        {reg.kind === "registered" && (
+          <Callout tone="ok" title={`REGISTERED · AGENT ID ${AGENT_ID}`}>
+            ownerOf({AGENT_ID}) resolves to the arbiter key on the Identity Registry — verified
+            live against chain 10143, not asserted by this app. Agent URI:{" "}
+            <span className="data-mono">https://escrowlens.xyz/agent.json</span> (hosted record
+            pending; the on-chain registration above is the binding fact). Registration
+            transaction:{" "}
+            <a
+              className="data-mono underline"
+              href={`https://testnet.monadscan.com/tx/${REG_TX}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              {REG_TX.slice(0, 10)}…{REG_TX.slice(-6)}
+            </a>
+          </Callout>
+        )}
+        {reg.kind === "pending" && (
+          <Callout tone="warn" title="AGENT REGISTRATION — PENDING">
+            The arbiter has no registration on the registries above right now. Until one exists,
+            this page deliberately claims no agent id or reputation. No metrics are displayed
+            because none exist yet.
+          </Callout>
+        )}
+        {reg.kind === "error" && (
+          <Callout tone="warn" title="REGISTRY READ FAILED — RETRY">
+            The RPC read did not complete, so this page can neither confirm nor deny registration
+            (a failed read is not the same as absence). Refresh to retry.
+            <span className="data-mono mt-2 block text-[11.5px] opacity-70">{reg.detail}</span>
+          </Callout>
+        )}
       </section>
 
       <section className="flex flex-col gap-3">
